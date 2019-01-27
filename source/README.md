@@ -1,9 +1,4 @@
 # electron-serialport
-An example of how to use serialport in an electron app
-
-**Clone and run for a quick way to see Electron and Serialport in action.**
-
-This is a minimal Electron application based on the [Quick Start Guide](http://electron.atom.io/docs/tutorial/quick-start) within the Electron documentation.
 
 **Use this app along with the [Electron API Demos](http://electron.atom.io/#get-started) app for API code examples to help you get started.**
 
@@ -21,7 +16,7 @@ To clone and run this repository you'll need [Git](https://git-scm.com) and [Nod
 
 ```bash
 # Clone this repository
-git clone https://github.com/johnny-five-io/electron-serialport.git
+git clone https://github.com/ItayRosen/Serial-Plotter.git
 # Go into the repository
 cd electron-serialport
 # Install dependencies
@@ -32,10 +27,5 @@ npm start
 
 Learn more about Electron and its API in the [documentation](http://electron.atom.io/docs/).
 
-## Other Example Apps
-
-For more example apps, see the
-[list of boilerplates](http://electron.atom.io/community/#boilerplates)
-created by the awesome electron community.
 
 #### License [CC0 1.0 (Public Domain)](LICENSE.md)
