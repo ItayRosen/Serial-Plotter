@@ -1,6 +1,6 @@
-# electron-serialport
+# Electron
 
-**Use this app along with the [Electron API Demos](http://electron.atom.io/#get-started) app for API code examples to help you get started.**
+**This is an electron app**
 
 A basic Electron application needs just these files:
 
@@ -10,7 +10,7 @@ A basic Electron application needs just these files:
 
 You can learn more about each of these components within the [Quick Start Guide](http://electron.atom.io/docs/tutorial/quick-start).
 
-## To Use
+## How To Use
 
 To clone and run this repository you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
 
