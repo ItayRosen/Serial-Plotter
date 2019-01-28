@@ -26,8 +26,8 @@ void setup() {
 
 void loop() {
 
-  int sensor1_data = digitalRead(sensor1);
-  int sensor2_data = digitalRead(sensor2);
+  char sensor1_data = digitalRead(sensor1);
+  char sensor2_data = digitalRead(sensor2);
   long timestamp = millis();
   
   String dataline = String(sensor1_data) + "," + String(sensor2_data) + "," + timestamp + ";";
