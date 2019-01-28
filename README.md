@@ -11,7 +11,7 @@ Meaning you need to separate the datapoints with a comma (,) and at the end of t
 The number of datapoints has to match the number of datasets (use Add Dataset button).
 
 # Quick start
-For windows, download the win folder inside dst and run Serial Plotter.exe
+For Windows platform, download the win folder (dst -> win32-x64) and run `Serial Plotter.exe`.
 
 # Arduino example
 ```
