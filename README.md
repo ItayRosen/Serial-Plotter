@@ -16,6 +16,9 @@ The syntax for input data from the serial port should be as follows: `:datapoint
 
 4. You can use the next three buttons to take a screenshot of the chart, pause the plotting and clear the chart of its data.
 
+# Quick start
+For Windows platform, download the win folder (dst -> win32-x64) and run `Serial Plotter.exe`.
+
 # Arduino example
 ```
 #define sensor1 1
@@ -29,8 +32,8 @@ void setup() {
 
 void loop() {
 
-  int sensor1_data = digitalRead(sensor1);
-  int sensor2_data = digitalRead(sensor2);
+  char sensor1_data = digitalRead(sensor1);
+  char sensor2_data = digitalRead(sensor2);
   long timestamp = millis();
   
   String dataline = String(sensor1_data) + "," + String(sensor2_data) + "," + timestamp + ";";
