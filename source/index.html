@@ -4,10 +4,11 @@
 
 <head>
 	<title>Serial Plotter</title>
-	<link href="bootstrap.min.css" rel="stylesheet">
-	<script src="Chart.bundle.js"></script>
-	<script src="utils.js"></script>
-	<script src="canvas2image.js"></script>
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/all.css" rel="stylesheet">
+	<script src="js/Chart.bundle.js"></script>
+	<script src="js/utils.js"></script>
+	<script src="js/canvas2image.js"></script>
 	<style>
 	canvas{
 		-moz-user-select: none;
@@ -18,25 +19,61 @@
 	.list-group-item, .list-group {
 		width: 100%;
 	}
+	
+	.container {
+		max-width: 100%;
+	}
+	
+	.navbar {
+		width: 100%;
+	}
+	
+	.table td, .table th {
+		border-top: 0px;
+	}
+	
+	.nav-button {
+		margin-right: 10px;
+	}
 	</style>
 </head>
 
 <body>
 	<div class="container">
 		<div class="row">
-			<canvas id="canvas"></canvas>
-		</div>
-		<div class="row">
-			<div class="col-md-3 offset-md-1">
-				<button type="button" class="btn btn-primary btn-lg btn-block" onclick="scan()" id="scanButton">Connect</button>
-				<center><span id="connectionStatus">Disconnected</span></center>
+			<div class="col-md-10">
+				<div class="row">
+					<nav class="navbar navbar-light bg-light">
+					<a class="navbar-brand">Serial Plotter</a>
+					  <form class="form-inline">
+						<button type="button" class="btn btn-success nav-button" onclick="scan()" title="Connect / Disconnect" id="connectButton"><i class="fas fa-power-off"></i></button>
+						<button type="button" class="btn btn-info nav-button" onclick="save()" title="Screenshot"><i class="fas fa-camera"></i></button>
+						<button type="button" class="btn btn-dark nav-button" onclick="pause()" title="Pause / Resume" id="pauseButton"><i class="fas fa-pause"></i></button>
+						<button type="button" class="btn btn-dark nav-button" onclick="clearData()" title="Clear Data"><i class="fas fa-trash"></i></button>
+					  </form>
+					</nav>
+				</div>
+				<div class="row">
+					<canvas id="canvas"></canvas>
+				</div>
 			</div>
-			<div class="col-md-3 ">
-				<button type="button" class="btn btn-secondary btn-lg btn-block" onclick="addDataset()" id="datasetButton">Add Dataset</button>
-				<ul id="datasets" class="list-group"></ul>
-			</div>
-			<div class="col-md-3">
-				<button type="button" class="btn btn-success btn-lg btn-block" onclick="save()">Save</button>
+			<div class="col-md-2">
+				<div class="row">
+					<nav class="navbar navbar-light bg-light">
+					  <a class="navbar-brand" href="#">Datasets</a>
+						<button class="btn btn-sm btn-outline-success" onclick="addDataset()" type="button"><i class="fas fa-plus"></i></button>
+					</nav>
+					<table class="table table-striped">
+					  <thead>
+						<tr>
+						  <th scope="col">Name</th>
+						  <th scope="col">Delete</th>
+						</tr>
+					  </thead>
+					  <tbody id="datasets">
+					  </tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -48,13 +85,18 @@ const prompt = require('electron-prompt');
 const SerialPort = require('serialport');
 
 //variables
+var maxValues = 1000;
 var xAxis = [0];
 var datasets = [];
 var dataOngoing = "";
 var alerted = [false,false,false];
+var connected = false;
+var port = null;
+var paused = false;
 
 //document ready
 window.onload = function(e){ 
+	//plot chart
     plot();
 }
 
@@ -87,8 +129,52 @@ function plot()
 	});
 }
 
+function clearData()
+{
+	for (var i = 0; i < maxValues; i++)
+	{
+		xAxis.shift();
+		datasets.forEach(function(dataset) {
+			dataset.data.shift();
+		});
+	}
+}
+
+function pause()
+{
+	if (!connected)
+	{
+		alert("Please connect to Serial Port first");
+		return;
+	}
+	if (!paused)
+	{
+		document.getElementById("pauseButton").innerHTML = '<i class="fas fa-play"></i>';
+		paused = true;
+	}
+	else
+	{
+		document.getElementById("pauseButton").innerHTML = '<i class="fas fa-pause"></i>';
+		paused = false;
+	}
+}
+
 function scan()
 {
+	//disconnect if we're already connected
+	if (connected)
+	{
+		port.close(function (err) {
+			console.log('port closed', err);
+		});
+		return;
+	}
+	//check if we have datasets
+	if (datasets.length == 0)
+	{
+		alert("Please add datasets first");
+		return;
+	}
 	//scan open ports
 	SerialPort.list((err, ports) => {
 		if (err) {
@@ -122,7 +208,9 @@ function scan()
 							//on open
 							port.on('open', function() {
 								alert('Connected to serialport');
-								document.getElementById("connectionStatus").innerHTML = "Connected";
+								connected = true;
+								document.getElementById("connectButton").classList.remove("btn-success");
+								document.getElementById("connectButton").classList.add("btn-danger");
 							});
 
 							//on error
@@ -138,7 +226,9 @@ function scan()
 							//on close
 							port.on('close', function () {
 								alert("Serialport disconnected");
-								document.getElementById("connectionStatus").innerHTML = "Disconnected";
+								connected = false;
+								document.getElementById("connectButton").classList.remove("btn-danger");
+								document.getElementById("connectButton").classList.add("btn-success");
 							});
 						}
 					})
@@ -152,10 +242,14 @@ function scan()
 
 function combineData(data)
 {
+	if (paused) return;
 	dataOngoing += data;
 	if (data.indexOf(";") != -1)
 	{
-		handleData(dataOngoing.slice(0, -1));
+		if (dataOngoing.slice(0,1) == ":" && dataOngoing.slice(-1) == ";")
+		{
+			handleData(dataOngoing.slice(1, -1));
+		}
 		dataOngoing = "";
 	}
 }
@@ -184,12 +278,11 @@ function handleData(data)
 			//check if the count of datapoints matches the datasets
 			if (datapoints.length-1 == datasets.length)
 			{
-				alerted[1] = false;
 				shift = false;
 				//push last item as xAxis
 				xAxis.push(datapoints[datapoints.length-1]);
 				//limit the data in the chart
-				if (xAxis.length > 300)
+				if (xAxis.length > maxValues)
 				{
 					xAxis.shift();
 					shift = true;
@@ -266,10 +359,9 @@ function addDataset()
 			//push to datasets
 			datasets.push({label: label, data: [0], backgroundColor: color, borderColor: color, fill: false});
 			//create list item and push to list
-			var node = document.createElement("LI");
+			var node = document.createElement("TR");
 			var datasetsNode = document.getElementById("datasets");
-			node.innerHTML = label + ' (<a onclick="removeDataset(this,\'' + label + '\')" style="color:red;cursor:pointer">X</a>)';
-			node.className = "list-group-item";
+			node.innerHTML = "<td>" + label + "</td><td><button type='button' onclick='removeDataset(this,\"" + label + "\")' class='btn btn-danger btn-sm'>X</button></td>";
 			datasetsNode.appendChild(node);
 			//update chart
 			window.myChart.update();
@@ -291,7 +383,7 @@ function removeDataset(ev,label)
 		}
 	}
 	//remove from list 
-	ev.parentNode.parentNode.removeChild(ev.parentNode);
+	ev.parentNode.parentNode.parentNode.removeChild(ev.parentNode.parentNode);
 	//clear array if it's the only element
 	if (datasets.length == 1)
 	{
